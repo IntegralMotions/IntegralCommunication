@@ -1,0 +1,35 @@
+{
+    "name": "Seven Bit Encoding",
+    "version": "1.0.0",
+    "description": "Cross-platform C++ library for encoding and decoding bytes using 7-bit encoding. Encode any amount of bytes with 7 bits to ensure you know where a group of bytes start and end.",
+    "keywords": [
+        "communication",
+        "encoding",
+        "decoding",
+        "bytes",
+        "messages"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/IntegralMotions/SevenBitEncoding"
+    },
+    "authors": [
+        {
+            "name": "Integral Motions",
+            "maintainer": true
+        }
+    ],
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": [
+        "ststm32",
+        "atmelavr",
+        "espressif32"
+    ],
+    "build": {
+        "includeDir": "include",
+        "srcDir": "src"
+    },
+    "license": "MIT"
+}
