@@ -41,6 +41,7 @@ jobs:
         with:
           style: 'file'          
           tidy-checks: ''        
+          cmake: true
           build-path: build      
           thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
 
