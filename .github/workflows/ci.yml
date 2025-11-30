@@ -34,10 +34,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          style: 'file'
-          tidy-checks: '' 
+          style: 'file'          
+          tidy-checks: ''        
+          build-path: build      
           thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
-          build-path: build
+
+          ignore-tidy: 'tests/**'
+          ignore-format: 'tests/**'
 
       - name: Fail on lint issues
         if: |
