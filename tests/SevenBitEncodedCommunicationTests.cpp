@@ -23,8 +23,9 @@ class FakeCommunication : public Communication {
     }
 
   private:
-    void writeImpl(const uint8_t* data, size_t size) override {
+    size_t writeImpl(const uint8_t* data, size_t size) override {
         _written.insert(_written.end(), data, data + size);
+        return size;
     }
 
     size_t availableImpl() override {

@@ -1,9 +1,10 @@
 #pragma once
 
+#include "IntegralCommunication/Communication.h"
 #include <cstddef>
 #include <cstdint>
 
-class BufferedCommunication {
+class BufferedCommunication : public Communication {
   public:
     BufferedCommunication(uint8_t* buffer, size_t bufferSize);
     virtual ~BufferedCommunication();
@@ -20,12 +21,6 @@ class BufferedCommunication {
     [[nodiscard]] size_t bufferSize() const noexcept;
 
   private:
-    // impl hooks
-    virtual size_t writeImpl(const uint8_t* data, size_t dataSize) = 0;
-    virtual size_t availableImpl() = 0;
-    virtual size_t readImpl(uint8_t* data, size_t dataSize) = 0;
-
-    // state
     uint8_t* _buffer;
     size_t _bufferSize;
     size_t _bufferIndex;
