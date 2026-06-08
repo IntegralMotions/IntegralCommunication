@@ -1,6 +1,6 @@
 #include "IntegralCommunication/Communication.h"
 #include "IntegralCommunication/SevenBitEncodedCommunication.h"
-#include "IntegralCommunication/SevenBitEncoding.h"
+#include "IntegralCommunication/Encoding/SevenBitEncoding.h"
 #include <algorithm>
 #include <cstdint>
 #include <cstring>

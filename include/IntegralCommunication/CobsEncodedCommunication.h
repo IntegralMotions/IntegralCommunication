@@ -6,61 +6,63 @@
 #include "Communication.h"
 
 /**
- * @brief Communication wrapper that frames messages with 7-bit encoding.
+ * @brief Communication wrapper that frames messages with COBS encoding.
  *
- * SevenBitEncodedCommunication writes each message as a 7-bit-safe byte stream.
- * Reads collect bytes until the encoding marks the end of a frame, decode one
- * complete message, and keep any later bytes buffered for the next readMessage
- * call.
+ * CobsEncodedCommunication writes each message as a COBS-encoded payload
+ * followed by the COBS delimiter byte. Reads collect bytes until the delimiter
+ * is found, decode one complete frame, and keep any later bytes buffered for
+ * the next readMessage call.
  */
-class SevenBitEncodedCommunication {
+class CobsEncodedCommunication {
   public:
     /**
-     * @brief Creates a 7-bit-framed communication wrapper.
+     * @brief Creates a COBS-framed communication wrapper.
      *
      * @param inner Communication instance used for the underlying transport.
      * @param txSize Number of bytes allocated for encoded outgoing frames.
      * @param rxSize Number of bytes allocated for encoded incoming frames.
      */
-    SevenBitEncodedCommunication(Communication& inner, size_t txSize, size_t rxSize);
+    CobsEncodedCommunication(Communication& inner, size_t txSize, size_t rxSize);
 
     /**
      * @brief Releases the internal transmit and receive buffers.
      */
-    ~SevenBitEncodedCommunication();
+    ~CobsEncodedCommunication();
 
-    SevenBitEncodedCommunication(const SevenBitEncodedCommunication&) = delete;
-    SevenBitEncodedCommunication& operator=(const SevenBitEncodedCommunication&) = delete;
+    CobsEncodedCommunication(const CobsEncodedCommunication&) = delete;
+    CobsEncodedCommunication& operator=(const CobsEncodedCommunication&) = delete;
 
     /**
-     * @brief Moves the owned buffers from another 7-bit communication wrapper.
+     * @brief Moves the owned buffers from another COBS communication wrapper.
      *
      * @param other Wrapper to move from.
      */
-    SevenBitEncodedCommunication(SevenBitEncodedCommunication&& other) noexcept;
+    CobsEncodedCommunication(CobsEncodedCommunication&& other) noexcept;
 
     /**
-     * @brief Moves the owned buffers from another 7-bit communication wrapper.
+     * @brief Moves the owned buffers from another COBS communication wrapper.
      *
      * @param other Wrapper to move from.
      * @return Reference to this wrapper.
      */
-    SevenBitEncodedCommunication& operator=(SevenBitEncodedCommunication&& other) noexcept;
+    CobsEncodedCommunication& operator=(CobsEncodedCommunication&& other) noexcept;
 
     /**
-     * @brief Encodes and writes one complete 7-bit-framed message.
+     * @brief Encodes and writes one complete COBS-framed message.
      *
-     * @param data Payload bytes to send.
+     * The frame delimiter is appended automatically after the encoded payload.
+     *
+     * @param data Payload bytes to send. May be nullptr when length is 0.
      * @param length Number of payload bytes to send.
      * @return Whether the message fit the transmit buffer and was written.
      */
     bool writeMessage(const uint8_t* data, size_t length);
 
     /**
-     * @brief Reads and decodes one complete 7-bit-framed message.
+     * @brief Reads and decodes one complete COBS-framed message.
      *
      * This function is non-blocking. It returns false when no complete frame is
-     * currently available or when the next available frame cannot be decoded.
+     * currently available or when the next available frame is malformed.
      *
      * @param out Buffer that receives decoded payload bytes.
      * @param maxOutLen Capacity of out in bytes.
