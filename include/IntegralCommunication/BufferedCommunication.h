@@ -24,7 +24,7 @@ class BufferedCommunication : public Communication {
     /**
      * @brief Flushes any pending bytes and destroys the buffered wrapper.
      */
-    virtual ~BufferedCommunication();
+    ~BufferedCommunication() override;
 
     /**
      * @brief Buffers bytes for transmission.
