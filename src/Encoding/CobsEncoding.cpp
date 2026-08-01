@@ -1,14 +1,14 @@
 #include "IntegralCommunication/Encoding/CobsEncoding.h"
 
 namespace CobsEncoding {
-    size_t getEncodedBufferSize(const size_t inputLength) {
+    size_t getEncodedBufferSize(size_t inputLength) {
         if (inputLength == 0) {
             return 1;
         }
         return inputLength + ((inputLength + MaxBlockPayloadSize - 1) / MaxBlockPayloadSize);
     }
 
-    size_t encodeBuffer(const uint8_t* inputBuffer, const size_t inputLength, uint8_t* outputBuffer) {
+    size_t encodeBuffer(const uint8_t* inputBuffer, size_t inputLength, uint8_t* outputBuffer) {
         if (outputBuffer == nullptr || (inputBuffer == nullptr && inputLength > 0)) {
             return 0;
         }
@@ -43,8 +43,8 @@ namespace CobsEncoding {
         return encodeIndex;
     }
 
-    bool decodeBuffer(const uint8_t* inputBuffer, const size_t inputLength, uint8_t* outputBuffer,
-                      const size_t outputLength, size_t& decodedLength) {
+    bool decodeBuffer(const uint8_t* inputBuffer, size_t inputLength, uint8_t* outputBuffer, size_t outputLength,
+                      size_t& decodedLength) {
         decodedLength = 0;
 
         if (inputBuffer == nullptr || inputLength == 0) {
@@ -88,7 +88,7 @@ namespace CobsEncoding {
         return true;
     }
 
-    bool isDelimiter(const uint8_t byte) {
+    bool isDelimiter(uint8_t byte) {
         return byte == Delimiter;
     }
 } // namespace CobsEncoding
