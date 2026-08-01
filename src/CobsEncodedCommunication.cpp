@@ -48,19 +48,19 @@ bool CobsEncodedCommunication::writeMessage(const uint8_t* data, size_t length) 
         return false;
     }
 
-    const size_t encodedCapacity = CobsEncoding::getEncodedBufferSize(length);
-    const size_t needed = encodedCapacity + 1U;
-    if (needed > _txSize) {
+    const size_t EncodedCapacity = CobsEncoding::getEncodedBufferSize(length);
+    const size_t Needed = EncodedCapacity + 1U;
+    if (Needed > _txSize) {
         return false;
     }
 
-    const size_t encodedLen = CobsEncoding::encodeBuffer(data, length, _txBuffer);
-    if (encodedLen == 0U) {
+    const size_t EncodedLen = CobsEncoding::encodeBuffer(data, length, _txBuffer);
+    if (EncodedLen == 0U) {
         return false;
     }
 
-    _txBuffer[encodedLen] = CobsEncoding::Delimiter;
-    _inner.write(_txBuffer, encodedLen + 1U);
+    _txBuffer[EncodedLen] = CobsEncoding::Delimiter;
+    _inner.write(_txBuffer, EncodedLen + 1U);
     return true;
 }
 
@@ -70,20 +70,20 @@ bool CobsEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, size_
         return false;
     }
 
-    const size_t available = _inner.available();
-    if (_rxIndex < _rxSize && available != 0U) {
-        const size_t space = _rxSize - _rxIndex;
-        const size_t toRead = std::min(available, space);
-        if (toRead == 0U) {
+    const size_t Available = _inner.available();
+    if (_rxIndex < _rxSize && Available != 0U) {
+        const size_t Space = _rxSize - _rxIndex;
+        const size_t ToRead = std::min(Available, Space);
+        if (ToRead == 0U) {
             return false;
         }
 
-        const size_t read = _inner.read(_rxBuffer + _rxIndex, toRead);
-        if (read == 0U) {
+        const size_t Read = _inner.read(_rxBuffer + _rxIndex, ToRead);
+        if (Read == 0U) {
             return false;
         }
 
-        _rxIndex += read;
+        _rxIndex += Read;
     }
 
     if (_rxIndex == 0U) {
@@ -106,16 +106,16 @@ bool CobsEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, size_
     }
 
     size_t decodedLen = 0;
-    const bool decoded = CobsEncoding::decodeBuffer(_rxBuffer, frameLen, out, maxOutLen, decodedLen);
+    const bool Decoded = CobsEncoding::decodeBuffer(_rxBuffer, frameLen, out, maxOutLen, decodedLen);
 
-    const size_t consumed = frameLen + 1U;
-    const size_t remaining = _rxIndex - consumed;
-    if (remaining > 0U) {
-        std::memmove(_rxBuffer, _rxBuffer + consumed, remaining);
+    const size_t Consumed = frameLen + 1U;
+    const size_t Remaining = _rxIndex - Consumed;
+    if (Remaining > 0U) {
+        std::memmove(_rxBuffer, _rxBuffer + Consumed, Remaining);
     }
-    _rxIndex = remaining;
+    _rxIndex = Remaining;
 
-    if (!decoded) {
+    if (!Decoded) {
         return false;
     }
 

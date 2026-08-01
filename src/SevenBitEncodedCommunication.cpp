@@ -47,14 +47,14 @@ bool SevenBitEncodedCommunication::writeMessage(const uint8_t* data, size_t leng
         return false;
     }
 
-    const size_t needed = SevenBitEncoding::getEncodedBufferSize(length);
-    if (needed > _txSize) {
+    const size_t Needed = SevenBitEncoding::getEncodedBufferSize(length);
+    if (Needed > _txSize) {
         return false;
     }
 
-    const size_t encodedLen = SevenBitEncoding::encodeBuffer(data, length, _txBuffer);
+    const size_t EncodedLen = SevenBitEncoding::encodeBuffer(data, length, _txBuffer);
 
-    _inner.write(_txBuffer, encodedLen);
+    _inner.write(_txBuffer, EncodedLen);
     return true;
 }
 
@@ -64,20 +64,20 @@ bool SevenBitEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, s
         return false;
     }
 
-    const size_t available = _inner.available();
-    if (_rxIndex < _rxSize && available != 0) {
-        const size_t space = _rxSize - _rxIndex;
-        const size_t toRead = std::min(available, space);
-        if (toRead == 0) {
+    const size_t Available = _inner.available();
+    if (_rxIndex < _rxSize && Available != 0) {
+        const size_t Space = _rxSize - _rxIndex;
+        const size_t ToRead = std::min(Available, Space);
+        if (ToRead == 0) {
             return false;
         }
 
-        const size_t read = _inner.read(_rxBuffer + _rxIndex, toRead);
-        if (read == 0) {
+        const size_t Read = _inner.read(_rxBuffer + _rxIndex, ToRead);
+        if (Read == 0) {
             return false;
         }
 
-        _rxIndex += read;
+        _rxIndex += Read;
     }
 
     if (_rxIndex == 0) {
@@ -99,24 +99,24 @@ bool SevenBitEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, s
         return false;
     }
 
-    const size_t decodedLen = SevenBitEncoding::decodeBuffer(_rxBuffer, encodedLen, out, maxOutLen);
+    const size_t DecodedLen = SevenBitEncoding::decodeBuffer(_rxBuffer, encodedLen, out, maxOutLen);
 
-    if (decodedLen == 0 && encodedLen != 0) {
-        const size_t remaining = _rxIndex - encodedLen;
-        if (remaining > 0) {
-            std::memmove(_rxBuffer, _rxBuffer + encodedLen, remaining);
+    if (DecodedLen == 0 && encodedLen != 0) {
+        const size_t Remaining = _rxIndex - encodedLen;
+        if (Remaining > 0) {
+            std::memmove(_rxBuffer, _rxBuffer + encodedLen, Remaining);
         }
-        _rxIndex = remaining;
+        _rxIndex = Remaining;
         return false;
     }
 
-    outLen = decodedLen;
+    outLen = DecodedLen;
 
-    const size_t remaining = _rxIndex - encodedLen;
-    if (remaining > 0) {
-        std::memmove(_rxBuffer, _rxBuffer + encodedLen, remaining);
+    const size_t Remaining = _rxIndex - encodedLen;
+    if (Remaining > 0) {
+        std::memmove(_rxBuffer, _rxBuffer + encodedLen, Remaining);
     }
-    _rxIndex = remaining;
+    _rxIndex = Remaining;
 
     return true;
 }

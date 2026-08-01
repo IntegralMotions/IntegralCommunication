@@ -20,26 +20,26 @@ void BufferedCommunication::write(const uint8_t* data, size_t dataSize) {
             }
         }
 
-        const size_t toCopy = (dataSize < space) ? dataSize : space;
-        std::memcpy(_buffer + _bufferIndex, data, toCopy);
-        _bufferIndex += toCopy;
-        data += toCopy;
-        dataSize -= toCopy;
+        const size_t ToCopy = (dataSize < space) ? dataSize : space;
+        std::memcpy(_buffer + _bufferIndex, data, ToCopy);
+        _bufferIndex += ToCopy;
+        data += ToCopy;
+        dataSize -= ToCopy;
     }
 }
 
 void BufferedCommunication::flush() {
     while (_bufferIndex > 0) {
-        const size_t written = writeImpl(_buffer, _bufferIndex);
-        if (written == 0) {
+        const size_t Written = writeImpl(_buffer, _bufferIndex);
+        if (Written == 0) {
             // can't push anything out, stop to avoid infinite loop
             return;
         }
 
-        if (written < _bufferIndex) {
-            std::memmove(_buffer, _buffer + written, _bufferIndex - written);
+        if (Written < _bufferIndex) {
+            std::memmove(_buffer, _buffer + Written, _bufferIndex - Written);
         }
-        _bufferIndex -= written;
+        _bufferIndex -= Written;
     }
 }
 
