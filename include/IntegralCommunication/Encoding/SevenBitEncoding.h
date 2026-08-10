@@ -87,6 +87,6 @@ namespace SevenBitEncoding {
      * @return Bit mask with the n least-significant bits set.
      */
     inline uint8_t leftMask(uint8_t n) {
-        return static_cast<uint8_t>((1 << (n)) - 1);
+        return static_cast<uint8_t>((1 << n) - 1);
     }
 } // namespace SevenBitEncoding

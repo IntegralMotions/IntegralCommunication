@@ -35,7 +35,7 @@ class BufferedCommunication : public Communication {
      * @param data Buffer containing bytes to write.
      * @param dataSize Number of bytes to write.
      */
-    void write(const uint8_t* data, size_t dataSize);
+    void write(const uint8_t* data, size_t dataSize) override;
 
     /**
      * @brief Writes all currently buffered bytes to the underlying transport.
@@ -47,7 +47,7 @@ class BufferedCommunication : public Communication {
      *
      * @return Number of readable bytes currently available.
      */
-    size_t available();
+    size_t available() override;
 
     /**
      * @brief Reads bytes from the underlying transport.
@@ -56,7 +56,7 @@ class BufferedCommunication : public Communication {
      * @param dataSize Maximum number of bytes to read.
      * @return Number of bytes actually read.
      */
-    size_t read(uint8_t* data, size_t dataSize);
+    size_t read(uint8_t* data, size_t dataSize) override;
 
   protected:
     /**

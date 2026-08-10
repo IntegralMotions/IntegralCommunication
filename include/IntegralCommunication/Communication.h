@@ -33,14 +33,14 @@ class Communication {
      * @param data Buffer containing bytes to write.
      * @param size Number of bytes to write.
      */
-    void write(const uint8_t* data, size_t size);
+    virtual void write(const uint8_t* data, size_t size);
 
     /**
      * @brief Returns the number of bytes available to read.
      *
      * @return Number of readable bytes currently available.
      */
-    size_t available();
+    virtual size_t available();
 
     /**
      * @brief Reads bytes from the underlying transport.
@@ -49,7 +49,7 @@ class Communication {
      * @param size Maximum number of bytes to read.
      * @return Number of bytes actually read.
      */
-    size_t read(uint8_t* data, size_t size);
+    virtual size_t read(uint8_t* data, size_t size);
 
   private:
     /**
