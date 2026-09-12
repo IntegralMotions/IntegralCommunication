@@ -1,7 +1,7 @@
 #include "IntegralCommunication/CobsEncodedCommunication.h"
 #include "IntegralCommunication/Communication.h"
-#include "IntegralCommunication/Encoding/CobsEncoding.h"
 
+#include <Encoding/CobsEncoding.h>
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -44,10 +44,11 @@ class CobsFakeCommunication : public Communication {
 };
 
 std::vector<uint8_t> encodeCobsFrame(const std::vector<uint8_t>& payload) {
-    std::vector<uint8_t> frame(CobsEncoding::getEncodedBufferSize(payload.size()) + 1U);
-    const size_t encodedLen = CobsEncoding::encodeBuffer(payload.data(), payload.size(), frame.data());
+    std::vector<uint8_t> frame(IntegralMotions::Encoding::CobsEncoding::getEncodedBufferSize(payload.size()) + 1U);
+    const size_t encodedLen =
+        IntegralMotions::Encoding::CobsEncoding::encodeBuffer(payload.data(), payload.size(), frame.data());
     frame.resize(encodedLen + 1U);
-    frame[encodedLen] = CobsEncoding::Delimiter;
+    frame[encodedLen] = IntegralMotions::Encoding::CobsEncoding::Delimiter;
     return frame;
 }
 
@@ -168,7 +169,7 @@ TEST(CobsEncodedCommunicationTests, ConsumesMalformedFrameAndContinuesWithNextFr
     CobsEncodedCommunication comm(fake, 128, 128);
 
     const std::vector<uint8_t> validPayload = {0x44, 0x00, 0x55};
-    std::vector<uint8_t> incoming = {0x03, 0x11, CobsEncoding::Delimiter};
+    std::vector<uint8_t> incoming = {0x03, 0x11, IntegralMotions::Encoding::CobsEncoding::Delimiter};
     const std::vector<uint8_t> validFrame = encodeCobsFrame(validPayload);
     incoming.insert(incoming.end(), validFrame.begin(), validFrame.end());
     fake.pushIncoming(incoming);

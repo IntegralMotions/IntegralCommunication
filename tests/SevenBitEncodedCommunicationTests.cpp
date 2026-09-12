@@ -1,6 +1,7 @@
 #include "IntegralCommunication/Communication.h"
 #include "IntegralCommunication/SevenBitEncodedCommunication.h"
-#include "IntegralCommunication/Encoding/SevenBitEncoding.h"
+
+#include <Encoding/SevenBitEncoding.h>
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -57,9 +58,10 @@ TEST(SevenBitEncodedCommunicationTests, WriteMessageEncodesAndForwards) {
     const std::vector<uint8_t> payload = {0x01, 0x02, 0xFF, 0x10};
 
     // Compute expected encoded form using SevenBitEncoding directly
-    const size_t needed = SevenBitEncoding::getEncodedBufferSize(payload.size());
+    const size_t needed = IntegralMotions::Encoding::SevenBitEncoding::getEncodedBufferSize(payload.size());
     std::vector<uint8_t> expected(needed);
-    const size_t encodedLen = SevenBitEncoding::encodeBuffer(payload.data(), payload.size(), expected.data());
+    const size_t encodedLen =
+        IntegralMotions::Encoding::SevenBitEncoding::encodeBuffer(payload.data(), payload.size(), expected.data());
     expected.resize(encodedLen);
 
     ASSERT_TRUE(comm.writeMessage(payload.data(), payload.size()));
@@ -90,9 +92,10 @@ TEST(SevenBitEncodedCommunicationTests, ReadMessageNonBlockingPartialThenFull) {
     const std::vector<uint8_t> payload = {0x10, 0x20, 0x30, 0x40};
 
     // Encode full message
-    const size_t needed = SevenBitEncoding::getEncodedBufferSize(payload.size());
+    const size_t needed = IntegralMotions::Encoding::SevenBitEncoding::getEncodedBufferSize(payload.size());
     std::vector<uint8_t> encoded(needed);
-    const size_t encodedLen = SevenBitEncoding::encodeBuffer(payload.data(), payload.size(), encoded.data());
+    const size_t encodedLen =
+        IntegralMotions::Encoding::SevenBitEncoding::encodeBuffer(payload.data(), payload.size(), encoded.data());
     encoded.resize(encodedLen);
 
     ASSERT_GT(encodedLen, 1u); // ensure we can create a partial sequence
@@ -130,14 +133,14 @@ TEST(SevenBitEncodedCommunicationTests, ReadTwoMessagesBackToBack) {
     const std::vector<uint8_t> msg2 = {0xAA, 0xBB, 0xCC, 0xDD};
 
     // Encode both messages and concatenate their encoded bytes
-    const size_t needed1 = SevenBitEncoding::getEncodedBufferSize(msg1.size());
+    const size_t needed1 = IntegralMotions::Encoding::SevenBitEncoding::getEncodedBufferSize(msg1.size());
     std::vector<uint8_t> enc1(needed1);
-    size_t encLen1 = SevenBitEncoding::encodeBuffer(msg1.data(), msg1.size(), enc1.data());
+    size_t encLen1 = IntegralMotions::Encoding::SevenBitEncoding::encodeBuffer(msg1.data(), msg1.size(), enc1.data());
     enc1.resize(encLen1);
 
-    const size_t needed2 = SevenBitEncoding::getEncodedBufferSize(msg2.size());
+    const size_t needed2 = IntegralMotions::Encoding::SevenBitEncoding::getEncodedBufferSize(msg2.size());
     std::vector<uint8_t> enc2(needed2);
-    size_t encLen2 = SevenBitEncoding::encodeBuffer(msg2.data(), msg2.size(), enc2.data());
+    size_t encLen2 = IntegralMotions::Encoding::SevenBitEncoding::encodeBuffer(msg2.data(), msg2.size(), enc2.data());
     enc2.resize(encLen2);
 
     std::vector<uint8_t> combined;

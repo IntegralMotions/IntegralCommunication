@@ -18,6 +18,16 @@ endif()
 
 option(INTEGRALCOMM_BUILD_TESTS "Build IntegralCommunication tests" ${INTEGRALCOMM_IS_TOP_LEVEL})
 
+include(FetchContent)
+
+FetchContent_Declare(
+    IntegralCoreUtilities
+    GIT_REPOSITORY https://github.com/IntegralMotions/IntegralCoreUtilities.git
+    GIT_TAG        v0.1.0
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(IntegralCoreUtilities)
+
 # Collect all source files from src/
 file(GLOB_RECURSE INTEGRALCOMM_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.[ch]
@@ -37,10 +47,13 @@ target_include_directories(IntegralCommunication
 
 target_compile_features(IntegralCommunication PUBLIC cxx_std_20)
 
+target_link_libraries(IntegralCommunication
+    PUBLIC
+        IntegralCoreUtilities::IntegralCoreUtilities
+)
+
 # ----------------- Tests -----------------
 if(INTEGRALCOMM_BUILD_TESTS)
-    include(FetchContent)
-
     FetchContent_Declare(
         googletest
         URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
@@ -64,5 +77,5 @@ if(INTEGRALCOMM_BUILD_TESTS)
     )
 
     include(GoogleTest)
-    gtest_discover_tests(IntegralCommunicationTests)
+    gtest_discover_tests(IntegralCommunicationTests PROPERTIES LABELS IntegralCommunication)
 endif()
