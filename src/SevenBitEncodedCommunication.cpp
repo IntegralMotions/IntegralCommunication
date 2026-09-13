@@ -1,5 +1,5 @@
 #include "IntegralCommunication/SevenBitEncodedCommunication.h"
-#include "IntegralCommunication/Encoding/SevenBitEncoding.h"
+#include "Encoding/SevenBitEncoding.h"
 #include <algorithm>
 #include <cstring>
 
@@ -47,12 +47,12 @@ bool SevenBitEncodedCommunication::writeMessage(const uint8_t* data, size_t leng
         return false;
     }
 
-    const size_t needed = SevenBitEncoding::getEncodedBufferSize(length);
+    const size_t needed = IntegralMotions::Encoding::SevenBitEncoding::getEncodedBufferSize(length);
     if (needed > _txSize) {
         return false;
     }
 
-    const size_t encodedLen = SevenBitEncoding::encodeBuffer(data, length, _txBuffer);
+    const size_t encodedLen = IntegralMotions::Encoding::SevenBitEncoding::encodeBuffer(data, length, _txBuffer);
 
     _inner.write(_txBuffer, encodedLen);
     return true;
@@ -88,7 +88,7 @@ bool SevenBitEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, s
     bool found = false;
 
     for (size_t i = 0; i < _rxIndex; ++i) {
-        if (SevenBitEncoding::isLastByte(_rxBuffer[i])) {
+        if (IntegralMotions::Encoding::SevenBitEncoding::isLastByte(_rxBuffer[i])) {
             encodedLen = i + 1;
             found = true;
             break;
@@ -99,7 +99,8 @@ bool SevenBitEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, s
         return false;
     }
 
-    const size_t decodedLen = SevenBitEncoding::decodeBuffer(_rxBuffer, encodedLen, out, maxOutLen);
+    const size_t decodedLen =
+        IntegralMotions::Encoding::SevenBitEncoding::decodeBuffer(_rxBuffer, encodedLen, out, maxOutLen);
 
     if (decodedLen == 0 && encodedLen != 0) {
         const size_t remaining = _rxIndex - encodedLen;

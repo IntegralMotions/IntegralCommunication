@@ -1,6 +1,5 @@
 #include "IntegralCommunication/CobsEncodedCommunication.h"
-#include "IntegralCommunication/Encoding/CobsEncoding.h"
-
+#include <Encoding/CobsEncoding.h>
 #include <algorithm>
 #include <cstring>
 
@@ -48,18 +47,18 @@ bool CobsEncodedCommunication::writeMessage(const uint8_t* data, size_t length) 
         return false;
     }
 
-    const size_t encodedCapacity = CobsEncoding::getEncodedBufferSize(length);
+    const size_t encodedCapacity = IntegralMotions::Encoding::CobsEncoding::getEncodedBufferSize(length);
     const size_t needed = encodedCapacity + 1U;
     if (needed > _txSize) {
         return false;
     }
 
-    const size_t encodedLen = CobsEncoding::encodeBuffer(data, length, _txBuffer);
+    const size_t encodedLen = IntegralMotions::Encoding::CobsEncoding::encodeBuffer(data, length, _txBuffer);
     if (encodedLen == 0U) {
         return false;
     }
 
-    _txBuffer[encodedLen] = CobsEncoding::Delimiter;
+    _txBuffer[encodedLen] = IntegralMotions::Encoding::CobsEncoding::Delimiter;
     _inner.write(_txBuffer, encodedLen + 1U);
     return true;
 }
@@ -94,7 +93,7 @@ bool CobsEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, size_
     bool found = false;
 
     for (size_t i = 0; i < _rxIndex; i++) {
-        if (CobsEncoding::isDelimiter(_rxBuffer[i])) {
+        if (IntegralMotions::Encoding::CobsEncoding::isDelimiter(_rxBuffer[i])) {
             frameLen = i;
             found = true;
             break;
@@ -106,7 +105,8 @@ bool CobsEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, size_
     }
 
     size_t decodedLen = 0;
-    const bool decoded = CobsEncoding::decodeBuffer(_rxBuffer, frameLen, out, maxOutLen, decodedLen);
+    const bool decoded =
+        IntegralMotions::Encoding::CobsEncoding::decodeBuffer(_rxBuffer, frameLen, out, maxOutLen, decodedLen);
 
     const size_t consumed = frameLen + 1U;
     const size_t remaining = _rxIndex - consumed;
