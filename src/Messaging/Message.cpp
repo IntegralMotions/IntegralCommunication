@@ -1,5 +1,5 @@
 #include "IntegralCommunication/Messaging/Message.h"
-#include <Math/CRC16.h>
+#include "Math/Crc16.h"
 
 Message createMessage(std::span<uint8_t> data, bool calculateCrc) {
     return Message{.buffer = data,
