@@ -5,6 +5,12 @@
 BufferedCommunication::BufferedCommunication(uint8_t* buffer, size_t bufferSize)
     : _buffer(buffer), _bufferSize(bufferSize), _bufferIndex(0) {}
 
+BufferedCommunication::BufferedCommunication(uint8_t* buffer, size_t bufferSize,
+                                             IntegralMotions::Diagnostics::Logger& logger)
+    : BufferedCommunication(buffer, bufferSize) {
+    _logger = &logger;
+}
+
 BufferedCommunication::~BufferedCommunication() = default;
 
 void BufferedCommunication::write(const uint8_t* data, size_t dataSize) {
@@ -16,6 +22,9 @@ void BufferedCommunication::write(const uint8_t* data, size_t dataSize) {
             space = _bufferSize - _bufferIndex;
             if (space == 0) {
                 // underlying writeImpl can't make space
+                if (_logger != nullptr) {
+                    _logger->logWarning("Buffered write could not accept bytes: remaining={}", dataSize);
+                }
                 return;
             }
         }

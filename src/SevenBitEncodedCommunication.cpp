@@ -7,6 +7,12 @@ SevenBitEncodedCommunication::SevenBitEncodedCommunication(Communication& inner,
     : _inner(inner), _txBuffer((txSize != 0U) ? new uint8_t[txSize] : nullptr),
       _rxBuffer((rxSize != 0U) ? new uint8_t[rxSize] : nullptr), _txSize(txSize), _rxSize(rxSize), _rxIndex(0) {}
 
+SevenBitEncodedCommunication::SevenBitEncodedCommunication(Communication& inner, size_t txSize, size_t rxSize,
+                                                           IntegralMotions::Diagnostics::Logger& logger)
+    : SevenBitEncodedCommunication(inner, txSize, rxSize) {
+    _logger = &logger;
+}
+
 SevenBitEncodedCommunication::~SevenBitEncodedCommunication() {
     delete[] _txBuffer;
     delete[] _rxBuffer;
@@ -14,7 +20,7 @@ SevenBitEncodedCommunication::~SevenBitEncodedCommunication() {
 
 SevenBitEncodedCommunication::SevenBitEncodedCommunication(SevenBitEncodedCommunication&& other) noexcept
     : _inner(other._inner), _txBuffer(other._txBuffer), _rxBuffer(other._rxBuffer), _txSize(other._txSize),
-      _rxSize(other._rxSize), _rxIndex(other._rxIndex) {
+      _rxSize(other._rxSize), _rxIndex(other._rxIndex), _rxFullReported(other._rxFullReported), _logger(other._logger) {
     other._txBuffer = nullptr;
     other._rxBuffer = nullptr;
     other._txSize = 0;
@@ -32,6 +38,8 @@ SevenBitEncodedCommunication& SevenBitEncodedCommunication::operator=(SevenBitEn
         _txSize = other._txSize;
         _rxSize = other._rxSize;
         _rxIndex = other._rxIndex;
+        _rxFullReported = other._rxFullReported;
+        _logger = other._logger;
 
         other._txBuffer = nullptr;
         other._rxBuffer = nullptr;
@@ -44,11 +52,17 @@ SevenBitEncodedCommunication& SevenBitEncodedCommunication::operator=(SevenBitEn
 
 bool SevenBitEncodedCommunication::writeMessage(const uint8_t* data, size_t length) {
     if ((_txBuffer == nullptr) || (_txSize == 0U)) {
+        if (_logger != nullptr) {
+            _logger->logWarning("7-bit transmit buffer unavailable");
+        }
         return false;
     }
 
     const size_t needed = IntegralMotions::Encoding::SevenBitEncoding::getEncodedBufferSize(length);
     if (needed > _txSize) {
+        if (_logger != nullptr) {
+            _logger->logWarning("7-bit transmit buffer too small: needed={} capacity={}", needed, _txSize);
+        }
         return false;
     }
 
@@ -96,6 +110,10 @@ bool SevenBitEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, s
     }
 
     if (!found) {
+        if (_rxIndex == _rxSize && !_rxFullReported && _logger != nullptr) {
+            _logger->logWarning("7-bit receive buffer full without frame end: capacity={}", _rxSize);
+            _rxFullReported = true;
+        }
         return false;
     }
 
@@ -103,11 +121,15 @@ bool SevenBitEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, s
         IntegralMotions::Encoding::SevenBitEncoding::decodeBuffer(_rxBuffer, encodedLen, out, maxOutLen);
 
     if (decodedLen == 0 && encodedLen != 0) {
+        if (_logger != nullptr) {
+            _logger->logWarning("7-bit frame decode failed: encoded={} output capacity={}", encodedLen, maxOutLen);
+        }
         const size_t remaining = _rxIndex - encodedLen;
         if (remaining > 0) {
             std::memmove(_rxBuffer, _rxBuffer + encodedLen, remaining);
         }
         _rxIndex = remaining;
+        _rxFullReported = false;
         return false;
     }
 
@@ -118,6 +140,7 @@ bool SevenBitEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, s
         std::memmove(_rxBuffer, _rxBuffer + encodedLen, remaining);
     }
     _rxIndex = remaining;
+    _rxFullReported = false;
 
     return true;
 }
