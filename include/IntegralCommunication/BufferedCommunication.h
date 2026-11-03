@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IntegralCommunication/Communication.h"
+#include <Diagnostics/Logger.h>
 #include <cstddef>
 #include <cstdint>
 
@@ -20,6 +21,8 @@ class BufferedCommunication : public Communication {
      * @param bufferSize Capacity of buffer in bytes.
      */
     BufferedCommunication(uint8_t* buffer, size_t bufferSize);
+    /** The non-owning logger must outlive this wrapper. */
+    BufferedCommunication(uint8_t* buffer, size_t bufferSize, IntegralMotions::Diagnostics::Logger& logger);
 
     /**
      * @brief Flushes any pending bytes and destroys the buffered wrapper.
@@ -91,4 +94,5 @@ class BufferedCommunication : public Communication {
     uint8_t* _buffer;
     size_t _bufferSize;
     size_t _bufferIndex;
+    IntegralMotions::Diagnostics::Logger* _logger = nullptr;
 };

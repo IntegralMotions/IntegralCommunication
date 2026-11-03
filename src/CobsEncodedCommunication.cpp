@@ -7,6 +7,12 @@ CobsEncodedCommunication::CobsEncodedCommunication(Communication& inner, size_t 
     : _inner(inner), _txBuffer((txSize != 0U) ? new uint8_t[txSize] : nullptr),
       _rxBuffer((rxSize != 0U) ? new uint8_t[rxSize] : nullptr), _txSize(txSize), _rxSize(rxSize), _rxIndex(0) {}
 
+CobsEncodedCommunication::CobsEncodedCommunication(Communication& inner, size_t txSize, size_t rxSize,
+                                                   IntegralMotions::Diagnostics::Logger& logger)
+    : CobsEncodedCommunication(inner, txSize, rxSize) {
+    _logger = &logger;
+}
+
 CobsEncodedCommunication::~CobsEncodedCommunication() {
     delete[] _txBuffer;
     delete[] _rxBuffer;
@@ -14,7 +20,7 @@ CobsEncodedCommunication::~CobsEncodedCommunication() {
 
 CobsEncodedCommunication::CobsEncodedCommunication(CobsEncodedCommunication&& other) noexcept
     : _inner(other._inner), _txBuffer(other._txBuffer), _rxBuffer(other._rxBuffer), _txSize(other._txSize),
-      _rxSize(other._rxSize), _rxIndex(other._rxIndex) {
+      _rxSize(other._rxSize), _rxIndex(other._rxIndex), _rxFullReported(other._rxFullReported), _logger(other._logger) {
     other._txBuffer = nullptr;
     other._rxBuffer = nullptr;
     other._txSize = 0;
@@ -32,6 +38,8 @@ CobsEncodedCommunication& CobsEncodedCommunication::operator=(CobsEncodedCommuni
         _txSize = other._txSize;
         _rxSize = other._rxSize;
         _rxIndex = other._rxIndex;
+        _rxFullReported = other._rxFullReported;
+        _logger = other._logger;
 
         other._txBuffer = nullptr;
         other._rxBuffer = nullptr;
@@ -44,17 +52,26 @@ CobsEncodedCommunication& CobsEncodedCommunication::operator=(CobsEncodedCommuni
 
 bool CobsEncodedCommunication::writeMessage(const uint8_t* data, size_t length) {
     if ((_txBuffer == nullptr) || (_txSize == 0U)) {
+        if (_logger != nullptr) {
+            _logger->logWarning("COBS transmit buffer unavailable");
+        }
         return false;
     }
 
     const size_t encodedCapacity = IntegralMotions::Encoding::CobsEncoding::getEncodedBufferSize(length);
     const size_t needed = encodedCapacity + 1U;
     if (needed > _txSize) {
+        if (_logger != nullptr) {
+            _logger->logWarning("COBS transmit buffer too small: needed={} capacity={}", needed, _txSize);
+        }
         return false;
     }
 
     const size_t encodedLen = IntegralMotions::Encoding::CobsEncoding::encodeBuffer(data, length, _txBuffer);
     if (encodedLen == 0U) {
+        if (_logger != nullptr) {
+            _logger->logWarning("COBS encoding failed");
+        }
         return false;
     }
 
@@ -101,6 +118,10 @@ bool CobsEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, size_
     }
 
     if (!found) {
+        if (_rxIndex == _rxSize && !_rxFullReported && _logger != nullptr) {
+            _logger->logWarning("COBS receive buffer full without frame delimiter: capacity={}", _rxSize);
+            _rxFullReported = true;
+        }
         return false;
     }
 
@@ -114,8 +135,12 @@ bool CobsEncodedCommunication::readMessage(uint8_t* out, size_t maxOutLen, size_
         std::memmove(_rxBuffer, _rxBuffer + consumed, remaining);
     }
     _rxIndex = remaining;
+    _rxFullReported = false;
 
     if (!decoded) {
+        if (_logger != nullptr) {
+            _logger->logWarning("COBS frame decode failed: encoded={} output capacity={}", frameLen, maxOutLen);
+        }
         return false;
     }
 

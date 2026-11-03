@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "Communication.h"
+#include <Diagnostics/Logger.h>
 
 /**
  * @brief Communication wrapper that frames messages with COBS encoding.
@@ -23,6 +24,9 @@ class CobsEncodedCommunication {
      * @param rxSize Number of bytes allocated for encoded incoming frames.
      */
     CobsEncodedCommunication(Communication& inner, size_t txSize, size_t rxSize);
+    /** The non-owning logger must outlive this wrapper. */
+    CobsEncodedCommunication(Communication& inner, size_t txSize, size_t rxSize,
+                             IntegralMotions::Diagnostics::Logger& logger);
 
     /**
      * @brief Releases the internal transmit and receive buffers.
@@ -79,4 +83,6 @@ class CobsEncodedCommunication {
     size_t _txSize;
     size_t _rxSize;
     size_t _rxIndex;
+    bool _rxFullReported = false;
+    IntegralMotions::Diagnostics::Logger* _logger = nullptr;
 };

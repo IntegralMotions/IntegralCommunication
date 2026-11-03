@@ -60,6 +60,31 @@ For framed messages, wrap a `Communication` instance with one of the encoded com
 
 Both wrappers expose `writeMessage(const uint8_t* data, size_t length)` and non-blocking `readMessage(uint8_t* out, size_t maxOutLen, size_t& outLen)`.
 
+### Optional diagnostics
+
+The encoded wrappers and `BufferedCommunication` can report warnings through an
+application-owned CoreUtilities logger. Pass a logger to the constructor to enable logging;
+the existing constructors without one keep logging disabled:
+
+```cpp
+#include <Diagnostics/BufferedLogger.h>
+
+IntegralMotions::Diagnostics::BufferedLogger<> logger;
+// Attach application-owned sinks to logger before processing entries.
+CobsEncodedCommunication comm(transport, txSize, rxSize, logger);
+// In the application loop: logger.process();
+```
+
+The logger must outlive the communication object. When using a deferred logger,
+the application is responsible for processing its queue and providing
+appropriate synchronization when used across threads or interrupts. Warnings
+cover transmit capacity, decode failures, receive buffers full without a frame
+end, and buffered writes that cannot accept all bytes. Normal incomplete reads
+are not logged. A full receive buffer is reported once; logging does not recover
+the stalled receiver. Log entries can be dropped when the logger queue is full.
+The existing write API does not report partial transport writes, so logging does
+not guarantee delivery.
+
 ## Messages And CRC
 
 `Message` is a non-owning view over payload bytes plus a CRC field. Use `createMessage` to create a message from existing data and optionally calculate the CRC-16/CCITT-FALSE checksum.
